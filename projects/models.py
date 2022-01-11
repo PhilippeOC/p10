@@ -1,7 +1,6 @@
 from django.db import models
 
 from django.contrib.auth import get_user_model
-
 User = get_user_model()
 
 
@@ -20,7 +19,7 @@ class Project(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     type = models.CharField(max_length=2, choices=TYPE_CHOICE, default=BACK_END)
-    # author_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    author_user_id = models.IntegerField()
 
     def __str__(self):
         return f"Project id: {self.pk}"
@@ -44,13 +43,13 @@ class Issue(models.Model):
 
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=1200)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="issues")
     tag = models.CharField(max_length=6, choices=TAG_CHOICE, default=BUG)
     status = models.CharField(max_length=3, choices=STATUS_CHOICE, default=TO_DO)
     priority = models.CharField(max_length=2, choices=PRIORITY_CHOICE, default=LOW_PRIORITY)
 
-    # author_user = models.ForeignKey(User, on_delete=models.CASCADE)
-    # assignee_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    author_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="issues_author")
+    assignee_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name="issues_assignee")
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="issues")
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -59,9 +58,9 @@ class Issue(models.Model):
 
 class Comment(models.Model):
     description = models.CharField(max_length=1200)
-    author_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    author_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name='comments')
     created_time = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return f"Comment id: {self.pk} - Issue id: {self.issue.id}"
